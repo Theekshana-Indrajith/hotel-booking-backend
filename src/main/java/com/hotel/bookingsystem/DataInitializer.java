@@ -6,11 +6,13 @@ import com.hotel.bookingsystem.repository.RoomRepository;
 import com.hotel.bookingsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
 @Component
+@Profile("dev") // Only run in development, not in production
 public class DataInitializer implements CommandLineRunner {
 
     @Autowired
@@ -23,7 +25,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         // Only add sample data if database is empty
         if (roomRepository.count() == 0) {
-            System.out.println("📊 Initializing sample data for Supabase PostgreSQL...");
+            System.out.println("📊 Initializing sample data for development...");
 
             Room room1 = new Room();
             room1.setRoomNumber("101");
@@ -59,12 +61,12 @@ public class DataInitializer implements CommandLineRunner {
             roomRepository.save(room2);
             roomRepository.save(room3);
 
-            System.out.println("✅ Sample rooms added to Supabase");
+            System.out.println("✅ Sample rooms added");
         }
 
         // Initialize users if there are none
         if (userRepository.count() == 0) {
-            System.out.println("📊 Initializing sample users for Supabase...");
+            System.out.println("📊 Initializing sample users...");
 
             User admin = new User();
             admin.setUsername("admin");
@@ -84,7 +86,7 @@ public class DataInitializer implements CommandLineRunner {
             demoUser.setRole("USER");
             userRepository.save(demoUser);
 
-            System.out.println("✅ Sample users added to Supabase");
+            System.out.println("✅ Sample users added");
         }
     }
 }

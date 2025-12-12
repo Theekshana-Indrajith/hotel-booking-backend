@@ -19,32 +19,26 @@ RUN mvn clean package -DskipTests
 FROM openjdk:17-slim
 WORKDIR /app
 
-# Install curl for health checks and PostgreSQL client for debugging
-RUN apt-get update && \
-    apt-get install -y curl postgresql-client && \
-    rm -rf /var/lib/apt/lists/*
+# Create non-root user for security
+RUN addgroup --system --gid 1001 spring && \
+    adduser --system --uid 1001 --ingroup spring spring
+
+# Switch to non-root user
+USER spring:spring
 
 # Copy the JAR file
-COPY --from=build /app/target/*.jar app.jar
-
-# Create a health check script
-RUN echo '#!/bin/bash\n\
-curl -f http://localhost:8080/api/test/ping || exit 1' > /healthcheck.sh && \
-    chmod +x /healthcheck.sh
+COPY --from=build --chown=spring:spring /app/target/*.jar app.jar
 
 # Expose port
 EXPOSE 8080
 
-# Add health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-    CMD /healthcheck.sh
-
-# Run the application with better JVM settings
+# Run the application with production profile
 ENTRYPOINT ["java", \
     "-Xmx512m", \
     "-Xms256m", \
     "-XX:+UseContainerSupport", \
     "-XX:MaxRAMPercentage=75.0", \
     "-Djava.security.egd=file:/dev/./urandom", \
+    "-Dspring.profiles.active=prod", \
     "-jar", \
     "app.jar"]

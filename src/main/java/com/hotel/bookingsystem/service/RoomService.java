@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class RoomService {
@@ -23,7 +24,7 @@ public class RoomService {
         return roomRepository.findByIsAvailableTrue();
     }
 
-    public Optional<Room> getRoomById(Long id) {
+    public Optional<Room> getRoomById(UUID id) {
         return roomRepository.findById(id);
     }
 
@@ -31,7 +32,7 @@ public class RoomService {
         return roomRepository.save(room);
     }
 
-    public void deleteRoom(Long id) {
+    public void deleteRoom(UUID id) {
         roomRepository.deleteById(id);
     }
 
@@ -45,5 +46,9 @@ public class RoomService {
 
     public List<Room> searchRooms(String roomType, Double maxPrice, Integer minGuests) {
         return roomRepository.searchRooms(roomType, maxPrice, minGuests);
+    }
+
+    public boolean existsById(UUID id) {
+        return roomRepository.existsById(id);
     }
 }

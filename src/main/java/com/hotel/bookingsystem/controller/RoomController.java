@@ -10,10 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/rooms")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${spring.mvc.cors.allowed-origins}")
 public class RoomController {
 
     @Autowired
@@ -35,7 +36,7 @@ public class RoomController {
 
     // Get room by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Room> getRoomById(@PathVariable Long id) {
+    public ResponseEntity<Room> getRoomById(@PathVariable UUID id) {
         return roomService.getRoomById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -50,7 +51,7 @@ public class RoomController {
 
     // Update room
     @PutMapping("/{id}")
-    public ResponseEntity<Room> updateRoom(@PathVariable Long id, @RequestBody Room roomDetails) {
+    public ResponseEntity<Room> updateRoom(@PathVariable UUID id, @RequestBody Room roomDetails) {
         return roomService.getRoomById(id)
                 .map(existingRoom -> {
                     existingRoom.setRoomNumber(roomDetails.getRoomNumber());
@@ -69,7 +70,7 @@ public class RoomController {
 
     // Delete room
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteRoom(@PathVariable UUID id) {
         if (roomService.getRoomById(id).isPresent()) {
             roomService.deleteRoom(id);
             return ResponseEntity.noContent().build();

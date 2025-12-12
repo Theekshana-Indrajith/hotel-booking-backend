@@ -13,21 +13,17 @@ import java.util.Arrays;
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
-
-    // Constructor injection (recommended over @Autowired on fields)
     @Autowired
-    public DataInitializer(RoomRepository roomRepository, UserRepository userRepository) {
-        this.roomRepository = roomRepository;
-        this.userRepository = userRepository;
-    }
+    private RoomRepository roomRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public void run(String... args) {
         // Only add sample data if database is empty
         if (roomRepository.count() == 0) {
-            System.out.println("📊 Initializing sample data...");
+            System.out.println("📊 Initializing sample data for Supabase PostgreSQL...");
 
             Room room1 = new Room();
             room1.setRoomNumber("101");
@@ -63,12 +59,12 @@ public class DataInitializer implements CommandLineRunner {
             roomRepository.save(room2);
             roomRepository.save(room3);
 
-            System.out.println("✅ Sample data added: 3 rooms created");
+            System.out.println("✅ Sample rooms added to Supabase");
         }
 
         // Initialize users if there are none
-        if (userRepository != null && userRepository.count() == 0) {
-            System.out.println("📊 Initializing sample users...");
+        if (userRepository.count() == 0) {
+            System.out.println("📊 Initializing sample users for Supabase...");
 
             User admin = new User();
             admin.setUsername("admin");
@@ -88,9 +84,7 @@ public class DataInitializer implements CommandLineRunner {
             demoUser.setRole("USER");
             userRepository.save(demoUser);
 
-            System.out.println("✅ Sample users added: admin and demo user");
-        } else if (userRepository == null) {
-            System.out.println("⚠️  UserRepository is null. Check if User entity and repository are properly configured.");
+            System.out.println("✅ Sample users added to Supabase");
         }
     }
 }

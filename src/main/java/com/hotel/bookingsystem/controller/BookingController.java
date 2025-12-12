@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/bookings")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${spring.mvc.cors.allowed-origins}")
 public class BookingController {
 
     @Autowired
@@ -33,7 +34,7 @@ public class BookingController {
 
     // Get booking by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Booking> getBookingById(@PathVariable Long id) {
+    public ResponseEntity<Booking> getBookingById(@PathVariable UUID id) {
         return bookingService.getBookingById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -48,16 +49,16 @@ public class BookingController {
 
     // Get bookings by user ID
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Booking>> getBookingsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<List<Booking>> getBookingsByUserId(@PathVariable UUID userId) {
         List<Booking> bookings = bookingService.getBookingsByUserId(userId);
         return ResponseEntity.ok(bookings);
     }
 
-    // Create new booking - UPDATED to accept userId
+    // Create new booking
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody Map<String, Object> bookingRequest) {
         try {
-            Long userId = Long.valueOf(bookingRequest.get("userId").toString());
+            UUID userId = UUID.fromString(bookingRequest.get("userId").toString());
             Booking booking = new Booking();
 
             // Map booking data from request
@@ -71,7 +72,7 @@ public class BookingController {
 
             // Create room object with ID
             Map<String, Object> roomData = (Map<String, Object>) bookingRequest.get("room");
-            Long roomId = Long.valueOf(roomData.get("id").toString());
+            UUID roomId = UUID.fromString(roomData.get("id").toString());
             com.hotel.bookingsystem.model.Room room = new com.hotel.bookingsystem.model.Room();
             room.setId(roomId);
             booking.setRoom(room);
@@ -90,13 +91,14 @@ public class BookingController {
             Booking createdBooking = bookingService.createBooking(userId, booking);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdBooking);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
     // Update booking
     @PutMapping("/{id}")
-    public ResponseEntity<Booking> updateBooking(@PathVariable Long id, @RequestBody Booking bookingDetails) {
+    public ResponseEntity<Booking> updateBooking(@PathVariable UUID id, @RequestBody Booking bookingDetails) {
         Booking updatedBooking = bookingService.updateBooking(id, bookingDetails);
         if (updatedBooking != null) {
             return ResponseEntity.ok(updatedBooking);
@@ -106,7 +108,7 @@ public class BookingController {
 
     // Cancel booking
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelBooking(@PathVariable Long id) {
+    public ResponseEntity<Void> cancelBooking(@PathVariable UUID id) {
         boolean cancelled = bookingService.cancelBooking(id);
         if (cancelled) {
             return ResponseEntity.ok().build();
@@ -116,7 +118,7 @@ public class BookingController {
 
     // Delete booking
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBooking(@PathVariable UUID id) {
         if (bookingService.getBookingById(id).isPresent()) {
             bookingService.deleteBooking(id);
             return ResponseEntity.noContent().build();
@@ -127,7 +129,7 @@ public class BookingController {
     // Check room availability
     @GetMapping("/check-availability")
     public ResponseEntity<Boolean> checkRoomAvailability(
-            @RequestParam Long roomId,
+            @RequestParam UUID roomId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut) {
 

@@ -1,7 +1,6 @@
 package com.hotel.bookingsystem.controller;
 
 import com.hotel.bookingsystem.model.User;
-import com.hotel.bookingsystem.service.BookingService;
 import com.hotel.bookingsystem.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,17 +9,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${spring.mvc.cors.allowed-origins}")
 public class AuthController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private BookingService bookingService;  // ADD THIS
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
@@ -78,11 +75,21 @@ public class AuthController {
         return ResponseEntity.ok(exists);
     }
 
-    // ADD THIS - Get user's bookings
-    @GetMapping("/{userId}/bookings")
-    public ResponseEntity<?> getUserBookings(@PathVariable Long userId) {
+    @GetMapping("/user/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable UUID id) {
         try {
-            return ResponseEntity.ok(bookingService.getBookingsByUserId(userId));
+            return userService.getUserById(id)
+                    .map(user -> {
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("id", user.getId());
+                        response.put("email", user.getEmail());
+                        response.put("username", user.getUsername());
+                        response.put("fullName", user.getFullName());
+                        response.put("role", user.getRole());
+                        response.put("phone", user.getPhone());
+                        return ResponseEntity.ok(response);
+                    })
+                    .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());

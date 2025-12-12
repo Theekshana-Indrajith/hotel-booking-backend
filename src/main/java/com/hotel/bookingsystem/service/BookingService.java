@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class BookingService {
@@ -24,13 +25,13 @@ public class BookingService {
     private RoomRepository roomRepository;
 
     @Autowired
-    private UserRepository userRepository;  // ADD THIS
+    private UserRepository userRepository;
 
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
 
-    public Optional<Booking> getBookingById(Long id) {
+    public Optional<Booking> getBookingById(UUID id) {
         return bookingRepository.findById(id);
     }
 
@@ -38,13 +39,11 @@ public class BookingService {
         return bookingRepository.findByGuestEmail(email);
     }
 
-    // ADD THIS METHOD - Get bookings by user ID
-    public List<Booking> getBookingsByUserId(Long userId) {
+    public List<Booking> getBookingsByUserId(UUID userId) {
         return bookingRepository.findByUserId(userId);
     }
 
-    // UPDATED METHOD - Now accepts userId
-    public Booking createBooking(Long userId, Booking booking) {
+    public Booking createBooking(UUID userId, Booking booking) {
         // Fetch the user from database
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
@@ -70,8 +69,7 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    // UPDATED METHOD - Add user fetch
-    public Booking updateBooking(Long id, Booking bookingDetails) {
+    public Booking updateBooking(UUID id, Booking bookingDetails) {
         Optional<Booking> optionalBooking = bookingRepository.findById(id);
         if (optionalBooking.isPresent()) {
             Booking booking = optionalBooking.get();
@@ -84,7 +82,7 @@ public class BookingService {
             booking.setSpecialRequests(bookingDetails.getSpecialRequests());
 
             // Get room ID from bookingDetails
-            Long roomId = bookingDetails.getRoom().getId();
+            UUID roomId = bookingDetails.getRoom().getId();
 
             // Recalculate total price if room or dates changed
             if (!booking.getRoom().getId().equals(roomId) ||
@@ -108,7 +106,7 @@ public class BookingService {
         return null;
     }
 
-    public boolean cancelBooking(Long id) {
+    public boolean cancelBooking(UUID id) {
         Optional<Booking> optionalBooking = bookingRepository.findById(id);
         if (optionalBooking.isPresent()) {
             Booking booking = optionalBooking.get();
@@ -119,11 +117,11 @@ public class BookingService {
         return false;
     }
 
-    public void deleteBooking(Long id) {
+    public void deleteBooking(UUID id) {
         bookingRepository.deleteById(id);
     }
 
-    public boolean isRoomAvailable(Long roomId, LocalDate checkIn, LocalDate checkOut) {
+    public boolean isRoomAvailable(UUID roomId, LocalDate checkIn, LocalDate checkOut) {
         // Check if room exists
         if (!roomRepository.existsById(roomId)) {
             throw new RuntimeException("Room not found with id: " + roomId);

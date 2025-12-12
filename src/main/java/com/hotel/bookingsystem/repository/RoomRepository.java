@@ -8,10 +8,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface RoomRepository extends JpaRepository<Room, Long> {
-
+public interface RoomRepository extends JpaRepository<Room, UUID> {
     // Find all available rooms
     List<Room> findByIsAvailableTrue();
 
